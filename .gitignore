@@ -1,0 +1,28 @@
+# Office lock and temp files (created while a workbook or doc is open)
+~$*.xlsx
+~$*.xlsm
+~$*.docx
+~$*.pptx
+~$*.xls
+~$*.doc
+~$*.ppt
+
+# macOS and Windows metadata (folder views, thumbnails)
+.DS_Store
+._*
+Thumbs.db
+desktop.ini
+
+# Editor backups and temp files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Credentials and environment files: never publish
+.env
+.env.*
+*.key
+*.pem
+secrets/
+private/
