@@ -15,3 +15,6 @@ This repository is my working portfolio for FIN 321, Fall 2026.
 Contact: www.linkedin.com/in/meghan-ericka-hernandez
 
 Reviewed with help from Claude (Anthropic, 2026); written and edited by me.
+
+## Resume
+[View my resume](RESUME.md)
