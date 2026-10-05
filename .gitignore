@@ -1,28 +1,47 @@
-# Office lock and temp files (created while a workbook or doc is open)
-~$*.xlsx
-~$*.xlsm
-~$*.docx
-~$*.pptx
-~$*.xls
-~$*.doc
-~$*.ppt
+# Office lock files, autosaves, and generated backups
+~$*
+~*.tmp
+*.asd
+*.wbk
+*.xlk
 
-# macOS and Windows metadata (folder views, thumbnails)
+# macOS and Windows metadata (folder views, thumbnails, and trash)
 .DS_Store
 ._*
+.Spotlight-V100
+.Trashes
+__MACOSX/
 Thumbs.db
+ehthumbs.db
 desktop.ini
+Desktop.ini
+$RECYCLE.BIN/
 
-# Editor backups and temp files
+# Editor backup, swap, and temporary files
 *.tmp
 *.bak
+*.backup
+*.orig
+*.rej
 *.swp
+*.swo
 *~
+.#*
+\#*#
 
-# Credentials and environment files: never publish
+# Credentials and environment files: never publish secrets
 .env
 .env.*
+.envrc
+credentials
+credentials.*
+id_rsa
+id_ed25519
 *.key
 *.pem
+*.p12
+*.pfx
+*.secret
+*.token
 secrets/
 private/
