@@ -5,8 +5,8 @@ This public portfolio belongs to Meghan Hernandez, a University of Hawaii at Man
 Canonical file: AGENTS.md. CLAUDE.md points here.
 
 ## Where things are
-- README.md             repository bio and index of engagements
-- RESUME.md             resume
+- README.md             who I am + the index of engagement
+- RESUME.md             
 - AGENTS.md             canonical AI conventions
 - CLAUDE.md             pointer to AGENTS.md
 - prompt-log.md         running record of AI sessions that mattered
@@ -33,10 +33,12 @@ Canonical file: AGENTS.md. CLAUDE.md points here.
 - Never invent a path or a filename. I will give you the exact one.
 
 ## How I work
-- Explain finance and business concepts fully, and walk through worked examples.
+- Explain finance and business concepts fully, and walk through worked examples. Do not hand me conclusions.
 - Critique my reasoning directly; I would rather be corrected than agreed with.
 - When uncertain, say so and explain what would resolve the uncertainty.
 - Explain jargon in plain language while retaining the precise terms I need to learn.
+- If the brief is ambigous, say so and stop - don't invent the scope.
+- No made-up numbers, sources, or experience. Missing data gets a `<placeholder>` and a note, not a plausible-looking value.
 
 ## What you may and may not draft
 - You MAY explain, critique, debug, quiz me, and draft mechanical files.

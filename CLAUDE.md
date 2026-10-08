@@ -1,1 +1,1 @@
-Read AGENTS.md - it is the canonical file.
+All agent instructions for this repo live in [AGENTS.md](AGENTS.md) - read that file.
