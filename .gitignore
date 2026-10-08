@@ -1,5 +1,9 @@
 # Office lock files, autosaves, and generated backups
 ~$*
+~$*.xlsx
+~$*.xlsm
+~$*.docx
+~$*.pptx
 ~*.tmp
 *.asd
 *.wbk

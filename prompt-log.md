@@ -1,0 +1,3 @@
+# Prompt log
+
+- 2026-10-07 — Asked to set up the specified public portfolio structure, tailor AI conventions from the fetched baseline and resume, preserve existing README.md and RESUME.md, add missing ignore patterns, and show all files before any commit. Produced the requested scaffolding, conventions, pointer, ignore patterns, and this entry. What was wrong and how it was caught: I initially missed the existing hidden .gitignore because the requested find exclusion also matched it; the attempted create was rejected, and I caught and corrected the oversight by inspecting .gitignore and preserving its contents.
