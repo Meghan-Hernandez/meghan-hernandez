@@ -1,4 +1,4 @@
-# Marginal analysis method
+# fx-hedging
 
 ## Model design
 Build a transparent, period-based model that separates assumptions, calculations, and outputs. Inputs should include selling price per unit, variable cost per unit, fixed costs, and expected volume. Keep units and currency consistent, and identify each assumption's source and period.
