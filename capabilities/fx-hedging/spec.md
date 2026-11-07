@@ -20,7 +20,7 @@
 
 The U.S. grain cooperative expects to receive EUR 6,900,000 from a Portuguese feed manufacturer in 182 days, around April 29, 2027. The cooperative's reporting and decision currency is USD, so EUR/USD appreciation would increase the realized dollar proceeds while EUR/USD depreciation would reduce them.
 
-The objective is to protect the USD value of the receivable and to quantify what each protection costs or gives up. THe decision sits with the CFO, who will choose among a forward, a money-market hedge, and a put option.
+The objective is to protect the USD value of the receivable and to quantify what each protection costs or gives up. The decision sits with the CFO, who will choose among a forward, a money-market hedge, and a put option.
 
 
 
@@ -38,7 +38,7 @@ All inputs should be exposed as workbook named ranges on the Notes or Inputs tab
 | `R_USD` | USD interest rate over the horizon | Annual rate | 4.216% |
 | `R_FC` | EUR interest rate over the horizon | Annual rate | 2.960% |
 | `T_DAYS` | Days to settlement | Days | 182 (April 29, 2027) |
-| `BASIS` | Day-Count denominator | Days | 360 (USD< EUR) |
+| `BASIS` | Day-count denominator | Days | 360 (USD / EUR) |
 | `K_PUT` | EUR put strike | USD per EUR | 1.1191 |
 | `K_CALL` | EUR call strike | USD per EUR | `<placeholder>` |
 | `PREM_PUT` | Put premium | USD per EUR | 0.0194 |
@@ -68,11 +68,11 @@ All inputs should be exposed as workbook named ranges on the Notes or Inputs tab
 - **Money market:** The cooperative borrows the present value of the EUR receivable, converts the borrowed euros to USD at spot, and invests the USD proceeds to settlement.
 - **Option:** The premium is paid upfront and quoted per EUR. The put strategy fixes a USD floor below which exercise can prevent EUR/USD depreciation from reducing proceeds, while preserving exposure to appreciation above the strike.
 - **Parity:** The money-market result is compared with the forward result. Persistent differences after rounding indicate a covered-interest-rate mismatch in sourced inputs, not a model-error tolerance.
-- **Option premium:** Paid upfront in USD, quoted per 1 EUR (no ctontract multiplier). It is expressed as a negatice cash flow carried forward at `R_USD` to put it on the same footing as settlement-date proceeds.
+- **Option premium:** Paid upfront in USD, quoted per 1 EUR (no contract multiplier). It is expressed as a negative cash flow carried forward at `R_USD` to put it on the same footing as settlement-date proceeds.
 - **Cash timing:** The option premium is carried forward at the USD rate so settlement-date proceeds are comparable across strategies.
 - **Costs and risk:** Base-case calculations exclude bid-ask spreads, taxes, accounting designation, credit risk, counterparty exposure, and transaction costs.
 - **Transaction costs & bid-ask spreads:** Excluded from the base case; a sensitivity candidate.
-- **Tax/ accounting treatment:** Excluded. Pre-tax cash outcomes only.
+- **Tax/accounting treatment:** Excluded. Pre-tax cash outcomes only.
 - **Sensitivity:** Settlement rates are varied deterministically; probabilities, implied-volatility distributions, and probability weights are not used.
 - **Scenario construction:** Future spot `S_T` is varied deterministically across a grid; no probability weights or implied volatility distribution. 
 - **Data status:** Market inputs are not validated or populated in Stage 2; source, provider, timestamp, and units are recorded when Stage 4 populates the workbook.
