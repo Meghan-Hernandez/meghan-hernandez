@@ -6,8 +6,8 @@
 | **Created by** | Meghan Hernandez |
 | **Updated by** | Meghan Hernandez |
 | **Date Created** | 2026-11-06 |
-| **Date Updated** | 2026-11-06 |
-| **Version** | 1.0 |
+| **Date Updated** | 2026-11-13 |
+| **Version** | 1.3 |
 | **LLM Used** | Copilot SDK in VS Code; Claude |
 | **Role** | Treasury Analyst |
 | **Audience** | CFO / Director of Treasury |
@@ -26,35 +26,53 @@ The objective is to protect the USD value of the receivable and to quantify what
 
 ## 2. Inputs (Known Variables)
 
-All inputs should be exposed as workbook named ranges on the Notes or Inputs tab. Market inputs remain blank or `<placeholder>` in this Stage 2 specification and must be populated only with sourced Stage 4 values. Market inputs (spot, forward, rates, premia) are the only cells an analyst should adjust for scenario work.
+All inputs should be exposed as workbook named ranges on the Inputs tab. Values below are indicative placeholders dated 29 Oct 2026, replaced with sourced Stage 4 values. Market inputs (spot, forward, rates, premia) are the only cells an analyst should adjust for scenario work. Their source and access details belong on the Notes & Assumptions tab.
 
 ### 2.1 Core Inputs
 
-| Standardized Name | Description | Unit | Scenario 12 value |
-|-------------------|-------------|------|-------------------|
-| `FC_AMT` | Foreign-currency receivable | EUR | 6,900,000 |
-| `S0_in` | Spot EUR/USD at inception | USD per EUR | 1.1191 |
-| `F0_in` | Quoted forward EUR/USD to settlement | USD per EUR | 1.1705 |
-| `R_USD` | USD interest rate over the horizon | Annual rate | 4.216% |
-| `R_FC` | EUR interest rate over the horizon | Annual rate | 2.960% |
-| `T_DAYS` | Days to settlement | Days | 182 (April 29, 2027) |
-| `BASIS` | Day-count denominator | Days | 360 (USD / EUR) |
-| `K_PUT` | EUR put strike | USD per EUR | 1.1191 |
-| `K_CALL` | EUR call strike | USD per EUR | `<placeholder>` |
-| `PREM_PUT` | Put premium | USD per EUR | 0.0194 |
-| `PREM_CALL` | Call premium | USD per EUR | 0.0296 |
+| Standardized Name | Description | Unit | Indicative placeholder (29 Oct 2026) | Stage 4 source |
+|-------------------|-------------|------|-------------------|----------------|
+| `FC_AMT` | Foreign-currency receivable | EUR | 6,900,000 | Invoice to the Portuguese buyer (ERP receivables ledger) |
+| `S0_in` | Spot EUR/USD at inception | USD per EUR | 1.1191 | EURUSD spot from one named provider, timestamped |
+| `F0_in` | Quoted forward EUR/USD to settlement | USD per EUR | 1.1705 | Bank indicative 182-day forward for the settlement date |
+| `R_USD` | USD interest rate over the horizon | Annual rate | 4.216% | CME Term SOFR 6M |
+| `R_FC` | EUR interest rate over the horizon | Annual rate | 2.960% | 6-month Euribor fixing (EMMI / ECB) |
+| `T_DAYS` | Days to settlement | Days | 182 (April 29, 2027) | Invoice due date minus `VAL_DATE` |
+| `VAL_DATE` | Valuation Date | Date | 29 Oct 2026 | Date and time of the Stage 4 data pull |
+| `BASIS` | Day-count denominator | Days | 360 (USD / EUR) | CME Term SOFR and EMMI Euribor methodology (both ACT/360) |
+| `K_PUT` | EUR put strike | USD per EUR | = `S0_in` (1.1191) | Equal to live S0_in; confirm against the bank’s option quote |
+| `K_CALL` | EUR call strike | USD per EUR | = `S0_in` (1.1191) | Equal to live S0_in; confirm against the bank’s option quote |
+| `PREM_PUT` | Put premium | USD per EUR | 0.0194 | Bank quote for a 182-day at-the-money EUR put |
+| `PREM_CALL` | Call premium | USD per EUR | 0.0296 | Bank quote for a 182-day at-the-money EUR call |
 
 
 ### 2.2 Derived / Intermediate Values
 
 | Name | Description | Source |
 |------|-------------|--------|
-| `DF_USD` | USD maturity growth factor | `1 + R_USD × T_DAYS / BASIS_USD` |
-| `DF_FC` | EUR maturity growth factor | `1 + R_FC × T_DAYS / BASIS_FC` |
+| `DF_USD` | USD maturity growth factor | `1 + R_USD × T_DAYS / BASIS` |
+| `DF_FC` | EUR maturity growth factor | `1 + R_FC × T_DAYS / BASIS` |
 | `FV_PREM_PUT` | Settlement-date value of the put premium | `−PREM_PUT × FC_AMT × DF_USD` |
 | `FV_PREM_CALL` | Future value of call premium at settlement | `−PREM_CALL × FC_AMT × DF_USD` |
-| `S_T_grid` | Settlement-date EUR/USD sensitivity grid | S0_in adjusted by the Stage 2 template's 1% increments |
+| `S_T_grid` | Settlement-date EUR/USD sensitivity grid | `S0_in` × (1 + k × 0.01), k = −5 to +5. |
 | `USD_NO_HEDGE` | USD proceeds under no hedge | `S_T × FC_AMT` |
+
+
+### 2.3 Workbook Tab Architecture
+
+The workbook uses the following tabs, in this order:
+
+| Tab | Purpose |
+|-----|---------|
+| Cover | Scenario 12 grain-cooperative (EUR 6,900,000 received in 182 days); author, date, version; data-provenance block naming each input’s source and marking all values indicative placeholders dated 29 Oct 2026 until Stage 4; points to Notes & Assumptions |
+| Legend | Explain the workbook's color convention: yellow = inputs, blue = assumptions, green = formulas, gray = outputs, applied on every tab. |
+| Inputs | Named-range inputs with unit, indicative value, and Stage 4 source; the only tab where analysts adjust market inputs |
+| Forward | Calculate and display the forward hedge's locked USD proceeds from the receivable amount and quoted forward rate. |
+| Money Market | Three separate cells: EUR borrowing, USD conversion at spot, USD investment; then the parity comparison with the forward |
+| Options | Put and call: premiums in `USD (FV_PREM_PUT, FV_PREM_CALL)`; put proceeds `USD_PUT` and call result `USD_CALL_NE`T as functions of `S_T`; `USD_FLOOR_PUT`. |
+| Sensitivity | Show the settlement-rate grid, strategy proceeds, hedge-profit measures, winner labels, summary metrics, and proceeds chart. |
+| Check | Every §6.3 check computed live with PASS / REVIEW status |
+| Notes & Assumptions | Record assumptions, constraints, and market-data provenance, including each source/provider, access timestamp, and units when Stage 4 populates the inputs. |
 
 
 
@@ -67,7 +85,7 @@ All inputs should be exposed as workbook named ranges on the Notes or Inputs tab
 - **Forward:** The forward strategy locks the quoted EUR/USD rate on the full receivable and pays no stated upfront premium.
 - **Money market:** The cooperative borrows the present value of the EUR receivable, converts the borrowed euros to USD at spot, and invests the USD proceeds to settlement.
 - **Option:** The premium is paid upfront and quoted per EUR. The put strategy fixes a USD floor below which exercise can prevent EUR/USD depreciation from reducing proceeds, while preserving exposure to appreciation above the strike.
-- **Parity:** The money-market result is compared with the forward result. Persistent differences after rounding indicate a covered-interest-rate mismatch in sourced inputs, not a model-error tolerance.
+- **Parity:** The money-market result is compared with the forward result. Parity passes if `USD_PARITY_GAP_PCT` ≤ 0.05% (about USD 3,885); otherwise the status is REVIEW. With the placeholder inputs the gap is USD 306,351 (3.94%), so REVIEW is expected.
 - **Option premium:** Paid upfront in USD, quoted per 1 EUR (no contract multiplier). It is expressed as a negative cash flow carried forward at `R_USD` to put it on the same footing as settlement-date proceeds.
 - **Cash timing:** The option premium is carried forward at the USD rate so settlement-date proceeds are comparable across strategies.
 - **Costs and risk:** Base-case calculations exclude bid-ask spreads, taxes, accounting designation, credit risk, counterparty exposure, and transaction costs.
@@ -75,7 +93,7 @@ All inputs should be exposed as workbook named ranges on the Notes or Inputs tab
 - **Tax/accounting treatment:** Excluded. Pre-tax cash outcomes only.
 - **Sensitivity:** Settlement rates are varied deterministically; probabilities, implied-volatility distributions, and probability weights are not used.
 - **Scenario construction:** Future spot `S_T` is varied deterministically across a grid; no probability weights or implied volatility distribution. 
-- **Data status:** Market inputs are not validated or populated in Stage 2; source, provider, timestamp, and units are recorded when Stage 4 populates the workbook.
+- **Data status:** Market inputs are indicative placeholders dated 29 Oct 2026; source, provider, timestamp and units are recorded when Stage 4 replaces them.
 
 
 
@@ -84,8 +102,8 @@ Written in named range pseudocode for a receivable. `S_T` is the spot rate on th
 
 ### Step 1 — Derived inputs
 
-1. `DF_USD = 1 + R_USD × T_DAYS / BASIS_USD`
-2. `DF_FC = 1 + R_FC × T_DAYS / BASIS_FC`
+1. `DF_USD = 1 + R_USD × T_DAYS / BASIS`
+2. `DF_FC = 1 + R_FC × T_DAYS / BASIS`
 3. `FV_PREM_PUT = −PREM_PUT × FC_AMT × DF_USD`
 4. `FV_PREM_CALL = −PREM_CALL × FC_AMT × DF_USD`
 
@@ -103,7 +121,7 @@ Written in named range pseudocode for a receivable. `S_T` is the spot rate on th
 3. USD maturity proceeds: `USD_MM = (FC_AMT / DF_FC) × S0_in × DF_USD`
 4. At settlement, the receivable repays the EUR borrowing exactly.
 
-**Parity check:** `USD_MM` should agree with `USD_FWD` within rounding. The absolute and percentage differences should be shown as separate check outputs.
+**Parity check:** Parity passes if `USD_PARITY_GAP_PCT` ≤ 0.05% (about USD 3,885). Otherwise the status is REVIEW. The absolute and percentage differences should be shown as separate check outputs.
 
 ### Step 4 — Option hedge
 
@@ -111,6 +129,10 @@ Written in named range pseudocode for a receivable. `S_T` is the spot rate on th
 - Settlement proceeds for each rate in the grid:
   - `USD_PUT(S_T) = MAX(S_T, K_PUT) × FC_AMT + FV_PREM_PUT`
 - The piecewise formula can be restated as `S_T × FC_AMT + MAX(0, (K_PUT − S_T) × FC_AMT) + FV_PREM_PUT`.
+- Call (reference leg, not one of the four strategies):
+  - Upfront premium: `CALL_PREM_USD = PREM_CALL × FC_AMT`
+  - Net result at settlement: `USD_CALL_NET(S_T) = MAX(0, S_T − K_CALL) × FC_AMT + FV_PREM_CALL`
+  - Break-even: `BE_CALL = K_CALL − FV_PREM_CALL / FC_AMT`
 
 ### Step 5 — Sensitivity table
 
@@ -122,6 +144,7 @@ For each settlement rate in `S_T_grid`:
 | Forward | `USD_FWD`, constant |
 | Money market | `USD_MM`, constant |
 | EUR put | `USD_PUT(S_T)` |
+| Call leg (reference, not charted)| `USD_CALL_NET(S_T)` |
 | Forward hedge profit | `USD_FWD − USD_NO_HEDGE` |
 | Money-market hedge profit | `USD_MM − USD_NO_HEDGE` |
 | Put hedge profit | `USD_PUT(S_T) − USD_NO_HEDGE` |
@@ -141,27 +164,27 @@ For each settlement rate in `S_T_grid`:
 
 | Output | Description | Format | Purpose |
 |--------|-------------|--------|---------|
-| Input panel | Named-range inputs, units, sources, access dates | Top of Inputs tab | Single source of truth |
-| Strategy summary | Forward, money-market, unhedged-at-spot, put-at-spot, and put-floor results | Summary table | Executive comparison |
+| Input panel | Named-range inputs, units, and values | Inputs tab | Single source of truth |
+| Strategy summary | Forward, money-market, unhedged-at-spot, put-at-spot, and put-floor results | Top of sensitivity tab | Executive comparison |
 | Sensitivity table | USD proceeds across settlement EUR/USD rates | Core table | Show rate-state outcomes |
 | Hedge-profit columns | Strategy proceeds less no-hedge proceeds | Core table | Isolate incremental hedge value |
 | Winner labels | Overall winner and best active hedge by rate | Two label columns | Provide quick-read result |
-| Sensitivity chart | USD proceeds versus settlement EUR/USD | Embedded line chart | Show certainty, optionality, and exposure |
-| Source and timestamp log | Market-data provenance | Notes tab | Audit Stage 4 population |
+| Sensitivity chart | USD proceeds versus settlement EUR/USD | Embedded on Sensitivity tab | Show certainty, optionality, and exposure |
+| Source and timestamp log | Market-data provenance | Notes & Assumptions tab | Audit Stage 4 population |
 
 ### 5.1 Computed Base-Case Values
 
-Values remain uncomputed until sourced market inputs are provided.
+Calculated from the §2.1 scenario values using simple-interest growth factors and 360-day bases. USD amounts are rounded to the nearest dollar; the scenario inputs remain unvalidated pending Stage 4 sourcing.
 
 | Strategy | USD Proceeds |
 |----------|-------------:|
-| No hedge at spot | `<placeholder>` |
-| Forward | `<placeholder>` |
-| Money market | `<placeholder>` |
-| EUR put | `<placeholder>` |
-| Put floor over the sensitivity grid | `<placeholder>` |
+| No hedge at spot | $7,721,790 |
+| Forward | $8,076,450 |
+| Money market | $7,770,099 |
+| EUR put | $7,585,077 |
+| Put floor over the sensitivity grid | $7,585,077 |
 
-
+The put and the floor match because the strike is at the money (`K_PUT` = `S0_in`).
 
 ## 6. Model Review — What Worked & What to Improve
 
@@ -175,27 +198,29 @@ Values remain uncomputed until sourced market inputs are provided.
 
 - Confirm that any quoted interest rates and forward points use a consistent 182-day convention.
 - Confirm whether the put premium is cash-settled upfront or financed differently.
-- Add a parity-warning threshold and prevent the summary from presenting uncovered differences as rounding.
+- Parity threshold (0.05%) is built in; confirm it still flags REVIEW after Stage 4.
 - Verify that settlement rates and linked formulas refresh correctly when market inputs are replaced.
 
 ### 6.3 Auditability Checklist
 
-- Every core input has the standardized named range in §2.1.
-- Every formula uses named ranges rather than bare cell references.
+- Every core input has the standardized named range in §2.1: all 12 present.
+- Every formula uses named ranges, with no bare cell references: 0 bare references.
 - `FC_AMT` is EUR 6,900,000 and `T_DAYS` is 182.
-- All market inputs identify source and access timestamp in the Notes tab.
-- Forward and money-market proceeds use the same settlement currency.
-- Put proceeds at its strike equal `K_PUT × FC_AMT + FV_PREM_PUT`.
-- Sensitivity grid is centered on `S0_in` and updates with input changes.
-- Settlement-day premium value is included with a negative cash-flow sign.
-- The parity difference is displayed in USD and percentage terms.
-- Input cells are yellow and formulas remain black according to the workbook visual convention.
+- Forward: `USD_FWD`= 8,076,450
+- Money Market: 6,798,268 EUR → 7,607,941 USD → 7,770,099.
+- Put proceeds at its strike equal `K_PUT × FC_AMT + FV_PREM_PUT`= 7,721,790 − 136,713 = 7,585,077.
+- Premium sign: `FV_PREM_PUT` = −136,713; `FV_PREM_CALL` = −208,593.
+- Call leg: `USD_CALL_NET` = −208,593 at or below the strike and 177,496 at +5%; `BE_CALL` = 1.1493.
+- Parity: gap = USD 306,351 (3.94%), so the status is REVIEW, which is expected with these placeholders.
+- Grid: 11 rows, from 1.0631 to 1.1751.
+- Input cells are yellow, assumptions blue, formulas green, and outputs gray, matching the Legend tab.
+- All market inputs identify source and access timestamp in the Notes & Assumptions tab.
 
 
 
 ## 7. Sensitivity Plan
 
-- **Grid:** settlement EUR/USD spans `S0_in × (1 ± 5%)` in the template's 1% increments, including the baseline rate.
+- **Grid:** settlement EUR/USD spans `S0_in` × (1 + k × 0.01), k = −5 to +5
 - **Strategies plotted:** no hedge, forward, money market, and EUR put.
 - **Primary chart:** line chart with settlement EUR/USD on the horizontal axis and USD proceeds on the vertical axis.
 - **Expected visual shapes:** the forward and money-market proceeds are horizontal; no hedge is linear through the origin; the put is piecewise-linear with a kink at the strike.
@@ -219,7 +244,6 @@ Stage 4 will populate sourced market inputs and refresh all formulas. Stage 5 wi
 - All scenario facts and sourced inputs should be explicit.
 - Market values, source names, and access timestamps should remain easy to audit.
 - Calculation steps should be reproducible from named ranges alone.
-- Unknowns should be labeled `<placeholder>` rather than filled with plausible values.
 - Workbook outputs should be traceable to the formulas in §4 and the validations in §6.
 
 ## 10. How This Sets Up Stages 3–5
@@ -238,4 +262,7 @@ Stage 4 will populate sourced market inputs and refresh all formulas. Stage 5 wi
 | Version | Date | Author | Change |
 |---------|------|--------|--------|
 | 0.1 | 2026-11-06 | Meghan Hernandez | Initial draft |
-|  |  |  |  |
+| 1.0 | 2026-11-06 | Meghan Hernandez | Reworked the specification for the grain-cooperative EUR receivable scenario. |
+| 1.1 | 2026-11-13 | Meghan Hernandez | Added workbook tab architecture and aligned input and data-source documentation locations. |
+| 1.2 | 2026-11-13 | Meghan Hernandez | Calculated forward, money-market, and sensitivity-grid put-floor proceeds from the §2.1 scenario inputs. |
+| 1.3 | 2026-11-13 | Meghan Hernandez | Added a Stage 4 source column to the §2.1 inputs table, with source placeholders pending validation. |
