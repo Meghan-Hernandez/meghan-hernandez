@@ -44,6 +44,9 @@ All inputs should be exposed as workbook named ranges on the Inputs tab. Values 
 | `K_CALL` | EUR call strike | USD per EUR | = `S0_in` (1.1191) | Equal to live S0_in; confirm against the bank’s option quote |
 | `PREM_PUT` | Put premium | USD per EUR | 0.0194 | Bank quote for a 182-day at-the-money EUR put |
 | `PREM_CALL` | Call premium | USD per EUR | 0.0296 | Bank quote for a 182-day at-the-money EUR call |
+| `PARITY_TOLERANCE` | **Blue assumption:** maximum absolute parity gap percentage | Fraction | 0.0005 | project brief, spec §3 |
+| `STEP_FRAC` | **Blue assumption:** grid step as a fraction of `S0_in` | Fraction | 0.01 | project brief |
+| `GRID_HALF` | **Blue assumption:** steps on each side of spot | Steps | 5 | project brief |
 
 
 ### 2.2 Derived / Intermediate Values
@@ -54,7 +57,7 @@ All inputs should be exposed as workbook named ranges on the Inputs tab. Values 
 | `DF_FC` | EUR maturity growth factor | `1 + R_FC × T_DAYS / BASIS` |
 | `FV_PREM_PUT` | Settlement-date value of the put premium | `−PREM_PUT × FC_AMT × DF_USD` |
 | `FV_PREM_CALL` | Future value of call premium at settlement | `−PREM_CALL × FC_AMT × DF_USD` |
-| `S_T_grid` | Settlement-date EUR/USD sensitivity grid | `S0_in` × (1 + k × 0.01), k = −5 to +5. |
+| `S_T_grid` | Settlement-date EUR/USD sensitivity grid | `S0_in` × (1 + k × `STEP_FRAC`), k running from −`GRID_HALF` to +`GRID_HALF`. |
 | `USD_NO_HEDGE` | USD proceeds under no hedge | `S_T × FC_AMT` |
 
 
@@ -74,6 +77,8 @@ The workbook uses the following tabs, in this order:
 | Check | Every §6.3 check computed live with PASS / REVIEW status |
 | Notes & Assumptions | Record assumptions, constraints, and market-data provenance, including each source/provider, access timestamp, and units when Stage 4 populates the inputs. |
 
+Name only the §2.1 inputs, the §2.2 derived values, and the headline results listed in §5. Do not create names for individual sensitivity-grid cells or for the check rows.
+
 
 
 ## 3. Assumptions & Constraints
@@ -85,7 +90,8 @@ The workbook uses the following tabs, in this order:
 - **Forward:** The forward strategy locks the quoted EUR/USD rate on the full receivable and pays no stated upfront premium.
 - **Money market:** The cooperative borrows the present value of the EUR receivable, converts the borrowed euros to USD at spot, and invests the USD proceeds to settlement.
 - **Option:** The premium is paid upfront and quoted per EUR. The put strategy fixes a USD floor below which exercise can prevent EUR/USD depreciation from reducing proceeds, while preserving exposure to appreciation above the strike.
-- **Parity:** The money-market result is compared with the forward result. Parity passes if `USD_PARITY_GAP_PCT` ≤ 0.05% (about USD 3,885); otherwise the status is REVIEW. With the placeholder inputs the gap is USD 306,351 (3.94%), so REVIEW is expected.
+- **Parity:** The money-market result is compared with the forward result. Parity passes if the **absolute value** of `USD_PARITY_GAP_PCT` ≤ `PARITY_TOLERANCE` (0.05%, about USD 3,885); otherwise the status is REVIEW. A forward below the money-market result must be tested the same way as one above it. With the placeholder inputs the gap is USD 306,351 (3.94%), so REVIEW is expected.
+- **Formula constants:** Do not create named cells for the constants 0 and 1. Write them directly in formulas, as in `DF_USD = 1 + R_USD × T_DAYS / BASIS` and `MAX(0, S_T − K_CALL)`. Every other constant must be a named assumption cell.
 - **Option premium:** Paid upfront in USD, quoted per 1 EUR (no contract multiplier). It is expressed as a negative cash flow carried forward at `R_USD` to put it on the same footing as settlement-date proceeds.
 - **Cash timing:** The option premium is carried forward at the USD rate so settlement-date proceeds are comparable across strategies.
 - **Costs and risk:** Base-case calculations exclude bid-ask spreads, taxes, accounting designation, credit risk, counterparty exposure, and transaction costs.
@@ -121,7 +127,7 @@ Written in named range pseudocode for a receivable. `S_T` is the spot rate on th
 3. USD maturity proceeds: `USD_MM = (FC_AMT / DF_FC) × S0_in × DF_USD`
 4. At settlement, the receivable repays the EUR borrowing exactly.
 
-**Parity check:** Parity passes if `USD_PARITY_GAP_PCT` ≤ 0.05% (about USD 3,885). Otherwise the status is REVIEW. The absolute and percentage differences should be shown as separate check outputs.
+**Parity check:** Parity passes if the **absolute value** of `USD_PARITY_GAP_PCT` ≤ `PARITY_TOLERANCE` (0.05%, about USD 3,885); otherwise the status is REVIEW. A forward below the money-market result must be tested the same way as one above it. The absolute and percentage differences should be shown as separate check outputs.
 
 ### Step 4 — Option hedge
 
@@ -203,6 +209,8 @@ The put and the floor match because the strike is at the money (`K_PUT` = `S0_in
 
 ### 6.3 Auditability Checklist
 
+Each check compares a live workbook value with the **typed spec reference figure** in this section, with a tolerance of ±1 USD (±0.0001 for FX rates). A check must not compare a formula to a copy of itself. Count the real grid rows with a formula; do not compare a typed number to itself. If a check fails, show FAIL and do not change an input to make it pass.
+
 - Every core input has the standardized named range in §2.1: all 12 present.
 - Every formula uses named ranges, with no bare cell references: 0 bare references.
 - `FC_AMT` is EUR 6,900,000 and `T_DAYS` is 182.
@@ -220,7 +228,7 @@ The put and the floor match because the strike is at the money (`K_PUT` = `S0_in
 
 ## 7. Sensitivity Plan
 
-- **Grid:** settlement EUR/USD spans `S0_in` × (1 + k × 0.01), k = −5 to +5
+- **Grid:** settlement EUR/USD spans `S0_in` × (1 + k × `STEP_FRAC`), with k running from −`GRID_HALF` to +`GRID_HALF`
 - **Strategies plotted:** no hedge, forward, money market, and EUR put.
 - **Primary chart:** line chart with settlement EUR/USD on the horizontal axis and USD proceeds on the vertical axis.
 - **Expected visual shapes:** the forward and money-market proceeds are horizontal; no hedge is linear through the origin; the put is piecewise-linear with a kink at the strike.
@@ -266,3 +274,4 @@ Stage 4 will populate sourced market inputs and refresh all formulas. Stage 5 wi
 | 1.1 | 2026-11-13 | Meghan Hernandez | Added workbook tab architecture and aligned input and data-source documentation locations. |
 | 1.2 | 2026-11-13 | Meghan Hernandez | Calculated forward, money-market, and sensitivity-grid put-floor proceeds from the §2.1 scenario inputs. |
 | 1.3 | 2026-11-13 | Meghan Hernandez | Added a Stage 4 source column to the §2.1 inputs table, with source placeholders pending validation. |
+| 1.5 | 2026-11-13 | Meghan Hernandez | Parity test uses absolute value and a named `PARITY_TOLERANCE`; named `STEP_FRAC` and `GRID_HALF`; ban on named 0/1 constants; checks compare to typed spec figures; named-range scope limited. |
