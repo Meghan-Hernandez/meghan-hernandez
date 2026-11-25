@@ -19,15 +19,6 @@ This repository is my working portfolio for FIN 321, Fall 2026.
 ### How I work with AI
  [AGENTS.md](AGENTS.md) · [prompt-log.md](prompt-log.md)
 
-## Engagements
-
-Each engagement is one question, answered end to end: a **brief** written *before* the work, a
-**decision** written *after* it, and the capability, data, and analysis that connect the two.
-
-| # | Question | Brief (before) | Decision (after) | Capability |
-|---|----------|----------------|------------------|------------|
-| 1 | Add | Add | Add | Add |
-
 
 ## Repo map
 
