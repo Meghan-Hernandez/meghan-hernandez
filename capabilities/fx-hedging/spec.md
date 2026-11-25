@@ -7,7 +7,7 @@
 | **Updated by** | Meghan Hernandez |
 | **Date Created** | 2026-11-06 |
 | **Date Updated** | 2026-11-13 |
-| **Version** | 1.3 |
+| **Version** | 1.5 |
 | **LLM Used** | Copilot SDK in VS Code; Claude |
 | **Role** | Treasury Analyst |
 | **Audience** | CFO / Director of Treasury |

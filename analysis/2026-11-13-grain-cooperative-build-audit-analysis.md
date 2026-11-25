@@ -111,7 +111,7 @@ The parity check shows **REVIEW**, and I did not force it to pass. The quoted fo
 ## 6. Commit log
 | Commit | Change |
 |---|---|
-| [hash] | Build 1: generated workbook from spec v1.4 |
-| [hash] | Spec v1.5: absolute-value parity, named assumptions, no named 0/1, checks against typed figures, named-range scope |
-| [hash] | Build 2: regenerated workbook from spec v1.5 |
-| [hash] | Audit note and prompt log |
+| confirm | Build 1: generated workbook from spec v1.4 |
+| confirm | Spec v1.5: absolute-value parity, named assumptions, no named 0/1, checks against typed figures, named-range scope |
+| confirm | Build 2: regenerated workbook from spec v1.5 |
+| confirm | Audit note and prompt log |
